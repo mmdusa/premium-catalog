@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, CSSProperties } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Item = { file: string; label?: string };
@@ -16,7 +16,7 @@ export default function SideThumbCarousel({
 
   /* Desktop layout (md and up) */
   maxWidth = 1280,
-  mainWidth = 900,     // desired max width for main image
+  mainWidth = 900, // desired max width for main image
   mainHeight = 520,
   thumbSize = 110,
   thumbCols = 2,
@@ -25,7 +25,7 @@ export default function SideThumbCarousel({
   /* Mobile layout (under md) */
   mobileAspect = 16 / 9,
   mobileThumbSize = 82,
-  mobileThumbGap = 8,
+  mobileThumbGap = 8, // (kept for API symmetry)
 
   /* Behavior */
   intervalMs = 3000,
@@ -56,15 +56,22 @@ export default function SideThumbCarousel({
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<number | null>(null);
 
-  const next = () => setIdx((i) => (i + 1) % slides.length);
-  const prev = () => setIdx((i) => (i - 1 + slides.length) % slides.length);
+  const next = useCallback(() => {
+    setIdx((i) => (i + 1) % slides.length);
+  }, [slides.length]);
+
+  const prev = useCallback(() => {
+    setIdx((i) => (i - 1 + slides.length) % slides.length);
+  }, [slides.length]);
 
   // autoplay
   useEffect(() => {
     if (!autoplay || paused || slides.length <= 1) return;
     timerRef.current = window.setInterval(next, intervalMs) as unknown as number;
-    return () => { if (timerRef.current) window.clearInterval(timerRef.current); };
-  }, [autoplay, paused, intervalMs, slides.length]);
+    return () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+    };
+  }, [autoplay, paused, slides.length, intervalMs, next]);
 
   // RIGHT grid thumbnails (desktop)
   const visibleThumbs = Math.max(
@@ -86,22 +93,22 @@ export default function SideThumbCarousel({
     [idx, slides.length]
   );
 
-  // ***** NEW: Fix sidebar width and clamp main width to avoid huge gaps *****
-  const sidebarWidth = thumbCols * thumbSize + (thumbCols - 1) * thumbGap; // exact width of the grid
-  const clampedMainWidth = `clamp(520px, 62vw, ${mainWidth}px)`; // shrinks on tablet, max at mainWidth
+  // Fixed sidebar width & clamped main width (prevents big gaps)
+  const sidebarWidth = thumbCols * thumbSize + (thumbCols - 1) * thumbGap;
+  const clampedMainWidth = `clamp(520px, 62vw, ${mainWidth}px)`;
 
   return (
     <section className="pt-10" aria-label="Gallery with side thumbnails">
       <h2 className="heading text-center">Gallery</h2>
 
-      {/* DESKTOP / TABLET LANDSCAPE */}
+      {/* DESKTOP / TABLET */}
       <div
         className="hidden md:block mx-auto mt-8 relative rounded-2xl border border-gold/20 bg-white/60 overflow-visible shadow"
         style={{ maxWidth }}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        {/* Two fixed columns: [clamped main] [fixed sidebar] — no auto stretching */}
+        {/* Two fixed columns: [clamped main] [fixed sidebar] */}
         <div
           className="grid items-start justify-items-start"
           style={{
@@ -111,7 +118,7 @@ export default function SideThumbCarousel({
             padding: "12px",
           }}
         >
-          {/* LEFT big image (width follows the clamped column) */}
+          {/* LEFT big image */}
           <div
             className="relative rounded-xl overflow-hidden border border-gold/20 bg-white w-full"
             style={{ height: mainHeight }}
@@ -197,13 +204,13 @@ export default function SideThumbCarousel({
         </div>
       </div>
 
-      {/* MOBILE / SMALL TABLETS */}
+      {/* MOBILE */}
       <div
         className="md:hidden mx-auto mt-6 relative rounded-2xl border border-gold/20 bg-white/60 overflow-hidden shadow w-full"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <div className="relative w-full" style={{ paddingTop: `${100 / (mobileAspect || (16 / 9))}%` }}>
+        <div className="relative w-full" style={{ paddingTop: `${100 / (mobileAspect || 16 / 9)}%` }}>
           {slides.map((s, i) => {
             const active = i === idx;
             return (
@@ -251,11 +258,18 @@ export default function SideThumbCarousel({
         {/* Horizontal thumbs */}
         <div className="relative px-2 py-3">
           <div className="overflow-x-auto no-scrollbar">
-            <ul className="flex gap-2 w-max pr-2" style={{ scrollSnapType: "x mandatory" as any }}>
+            <ul
+              className="flex gap-2 w-max pr-2"
+              style={{ scrollSnapType: "x mandatory" as CSSProperties["scrollSnapType"] }}
+            >
               {mobileThumbIndices.map((ti) => {
                 const s = slides[ti];
                 return (
-                  <li key={ti} className="shrink-0" style={{ scrollSnapAlign: "start" as any }}>
+                  <li
+                    key={ti}
+                    className="shrink-0"
+                    style={{ scrollSnapAlign: "start" as CSSProperties["scrollSnapAlign"] }}
+                  >
                     <button
                       onClick={() => setIdx(ti)}
                       className="relative rounded-md overflow-hidden border border-gold/30 shadow"
