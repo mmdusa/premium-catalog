@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS variables */
+:root {
+  --cream: #f7f3ea;
+  --deepgreen: #153226;
+  --gold: #c0a062;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--cream);
+}
+
+/* Base (no @apply of custom utilities) */
+@layer base {
+  body {
+    color: var(--deepgreen);
+  }
+
+  /* ⟵ was @apply text-deepgreen */
+}
+
+/* Optional helper classes (can use in markup, but don't @apply them) */
+@layer utilities {
+  .bg-cream {
+    background-color: var(--cream);
+  }
+
+  .text-cream {
+    color: var(--cream);
+  }
+
+  .text-deepgreen {
+    color: var(--deepgreen);
+  }
+
+  .bg-deepgreen {
+    background-color: var(--deepgreen);
+  }
+
+  .text-gold {
+    color: var(--gold);
+  }
+
+  .bg-gold {
+    background-color: var(--gold);
+  }
+}
+
+/* Reusable components */
+@layer components {
+  .container {
+    @apply mx-auto max-w-6xl px-4 py-20;
+  }
+
+  .heading {
+    @apply font-display text-4xl md:text-5xl tracking-tight;
+  }
+
+  .body {
+    @apply text-lg leading-8;
+  }
+
+  .btn {
+    @apply inline-block bg-deepgreen text-cream px-5 py-3 rounded-xl shadow hover:opacity-90 transition;
+  }
+
+  .btn-outline {
+    @apply inline-block border border-cream/70 text-cream px-5 py-3 rounded-xl hover:bg-cream hover:text-deepgreen transition;
+  }
+
+  .label {
+    @apply block text-sm mb-1 uppercase tracking-wide;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-gold/30 bg-white/80 px-3 py-2 outline-none focus:ring-2 focus:ring-gold/50;
+  }
+
+  .link {
+    @apply hover:text-gold transition;
+  }
+}
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
